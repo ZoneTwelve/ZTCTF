@@ -1,8 +1,11 @@
-var http = require('http');
-var app = require('./core');
-var fs = require('fs');
-var indexPage = fs.readFileSync("index.html", 'utf8');
-var notFoundPage = fs.readFileSync("404.html", 'utf8');
+const http = require('http');
+const app = require('./core');
+const fs = require('fs');
+const indexJSNmae = __filename.split("\\").pop();
+
+const indexPage = fs.readFileSync("index.html", 'utf8');
+const notFoundPage = fs.readFileSync("404.html", 'utf8');
+
 app.use('/', function(req, res){
   res.writeHead(200, {'MaybeYouNeedSome': 'JS'});
   res.end(indexPage);
@@ -27,12 +30,17 @@ app.use('/flag', (req, res)=>{
   res.end(`no access`);
 });
 
-app.use('/cat.js', (req, res)=>{
-  res.writeHead(200, {'youNeedThisHint': 'Dont-believe-the-server'});
-  res.end('console.log("Meow")');
+app.use(`/${indexJSNmae}`, (req, res)=>{
+  res.writeHead(403, {'youNeed': 'Me'});
+  res.end(`no access`);
 });
 
-app.use('/index.js', (req, res)=>{
+app.use('/cat.js', (req, res)=>{
+  res.writeHead(200, {'youNeedThisHint': 'Dont-believe-the-server'});
+  res.end(fs.readFileSync("cat.js"));
+});
+
+app.use('/package.json', (req, res)=>{
   res.writeHead(403, {'n0-access': 'true'});
   res.end('no access');
 });
@@ -55,7 +63,7 @@ app.use('/hint', (req, res)=>{
       hintMessage = `<b>This is Local File include exploit</b><br /><a href="/hint?n=${hid+1}">more</a>`;
     break;
     case 5:
-      hintMessage = `<b>if you dont have access, try use LFI on /guess?f={file}</b><br />`;
+      hintMessage = `<b>If you do not have access, try use LFI on /guess?f={file}</b><br />`;
     break;
     default: hintMessage = `<b>Node.js Server</b><br /><a href="/hint?n=1">more</a>`;
   }

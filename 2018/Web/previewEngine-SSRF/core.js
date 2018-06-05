@@ -7,7 +7,7 @@ const url = require('url');
 const fs = require('fs');
 
 var routeRequest = [];
-var notFoundPage = fs.readFileSync("404.html", 'utf8');
+var notFoundPage = "Opps..."||fs.readFileSync("404.html", 'utf8');
 
 var log;
 
@@ -27,9 +27,7 @@ fs.exists(__dirname+'/log', function (exists) {
 });
 
 function route(req, res){
-  log.write(`${req.method} ${req.url} "${req.headers['user-agent']}"\r\n`);
-  // console.log(req);
-	console.log(`${req.method} ${req.url}`);
+  console.log(req.method, req.url);
   switch(req.method){
     case 'GET':
       return getMiddleware(req, res);
@@ -44,6 +42,7 @@ function getMiddleware(req, res){
   var q = url.parse(req.url, true);
   req.query = q.query;
   req.pathname = q.pathname;
+  log.write(`${req.method} GET:"${JSON.stringify(req.query)}"${req.post!==undefined?'POST:"'+JSON.stringify(req.post)+'"':''}`)
   request(req, res);
 }
 
@@ -63,7 +62,8 @@ function postMiddleware(req, res){
 function request(req, res){
   var routeFunc = routeRequest[req.pathname];
   if(routeFunc===undefined){
-    return res.end("Opps...");
+    res.writeHead(404, {"Content-Type": "text/html"});
+    return res.end(notFoundPage);
   }else
     return routeFunc(req, res);
 }
